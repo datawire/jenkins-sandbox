@@ -6,10 +6,14 @@ LABEL PROJECT_REPO_URL="git@github.com:datawire/jenkins-docker.git" \
       VENDOR="Datawire" \
       VENDOR_URL="https://datawire.io/"
 
+ENV KUBECTL_VERSION "1.6.1"
+ENV KOPS_VERSION "1.5.3"
+
 # Install OS dependecies using the root user.
 USER root
 
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+ADD https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64 /usr/local/bin/kops
 
 RUN apk add --no-cache \
         busybox-suid \
@@ -17,6 +21,7 @@ RUN apk add --no-cache \
         curl \
         docker \
     && chmod +x /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kops \
     && addgroup jenkins docker
 
 COPY security-basic.groovy \
