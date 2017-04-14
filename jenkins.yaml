@@ -1,0 +1,127 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-ui
+  namespace: jenkins
+spec:
+  type: LoadBalancer
+  selector:
+    app: master
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: ui
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-discovery
+  namespace: jenkins
+spec:
+  selector:
+    app: master
+  ports:
+    - protocol: TCP
+      port: 50000
+      targetPort: 50000
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: jenkins-admin
+  namespace: jenkins
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: YWRtaW4=
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 1000Mi
+  hostPath:
+    path: /data/jenkins
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1000Mi
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: master
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: master
+          imagePullPolicy: Never
+          image: datawire/jenkins:latest
+          securityContext:
+            privileged: true # necessary for running Docker
+          env:
+            - name: DOCKER_API_VERSION
+              value: "1.12"
+            - name: JAVA_OPTS
+              value: -Djenkins.install.runSetupWizard=false
+            - name: JENKINS_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin
+                  key: username
+            - name: JENKINS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin
+                  key: password
+          ports:
+            - containerPort: 8080
+            - containerPort: 50000
+          volumeMounts:
+            - mountPath: /var/jenkins_home
+              name: jenkins-data
+            - mountPath: /var/run/docker.sock
+              name: docker-sock
+              readOnly: false
+            - mountPath: /var/lib/docker
+              name: docker-directory
+              readOnly: false
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+            claimName: jenkins
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+        - name: docker-directory
+          hostPath:
+            path: /var/lib/docker
