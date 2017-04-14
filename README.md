@@ -20,14 +20,20 @@ The below command will get you the IP of the Jenkins UI:
 
 ### Share Jenkins with someone else
 
-Sometimes it's useful to be able to to share your private jenkins or make it available on the public internet (for webhook testing). I recommend using [ngrok](https://ngrok.com/):
+Sometimes it's useful to be able to to share your private jenkins or make it available on the public internet (e.g. for webhook testing). I recommend using [ngrok](https://ngrok.com/):
 
 `ngrok http (minikube service jenkins-ui --url --namespace jenkins | sed 's~http[s]*://~~g')`
 
 If you have a paid ngrok account you can setup a stable su bdomain for use this way:
 
-`ngrok http -subdomain=<NAME> (minikube service jenkins-ui --url --namespace pipeline | sed 's~http[s]*://~~g')`
+`ngrok http -subdomain=<NAME> (minikube service jenkins-ui --url --namespace jenkins | sed 's~http[s]*://~~g')`
 
 For example I usually use:
 
 `ngrok http -subdomain=jenkins-$USER (minikube service jenkins-ui --url --namespace jenkins | sed 's~http[s]*://~~g')`
+
+## License
+
+Project is open-source software licensed under Apache 2.0. Please see [License](LICENSE) for further details.
+
+
