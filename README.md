@@ -19,6 +19,7 @@ minikube docker-env
 
 ```bash
 kubectl apply -f jenkins-ns.yaml
+bash configure-aws-credentials.sh
 kubectl apply -f jenkins.yaml
 ```
 

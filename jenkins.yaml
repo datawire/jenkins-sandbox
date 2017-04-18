@@ -115,6 +115,9 @@ spec:
             - mountPath: /var/lib/docker
               name: docker-directory
               readOnly: false
+            - mountPath: /root/.aws
+              name: aws-creds
+              readOnly: true
       volumes:
         - name: jenkins-data
           persistentVolumeClaim:
@@ -125,3 +128,6 @@ spec:
         - name: docker-directory
           hostPath:
             path: /var/lib/docker
+        - name: aws-creds
+          secret:
+            secretName: aws-creds
